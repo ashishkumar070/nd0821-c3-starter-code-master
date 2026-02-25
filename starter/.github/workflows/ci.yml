@@ -28,4 +28,4 @@ jobs:
       run: flake8 starter
 
     - name: Run tests
-      run: pytest starter/tests
+      run: pytest starter/tests   
