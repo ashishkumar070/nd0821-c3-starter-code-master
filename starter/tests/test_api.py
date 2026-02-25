@@ -7,6 +7,7 @@ def test_get_root():
     r = client.get("/")
     assert r.status_code == 200
     assert "Welcome" in r.json()["message"]
+    
 
 high_income_input = {
     "age": 42,
