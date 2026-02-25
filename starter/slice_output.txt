@@ -1,0 +1,16 @@
+education=HS-grad | Precision=0.553, Recall=0.167, Fbeta=0.257
+education=Assoc-voc | Precision=0.617, Recall=0.500, Fbeta=0.552
+education=Some-college | Precision=0.612, Recall=0.404, Fbeta=0.487
+education=11th | Precision=1.000, Recall=0.000, Fbeta=0.000
+education=5th-6th | Precision=1.000, Recall=0.000, Fbeta=0.000
+education=Bachelors | Precision=0.731, Recall=0.797, Fbeta=0.762
+education=9th | Precision=1.000, Recall=0.000, Fbeta=0.000
+education=10th | Precision=1.000, Recall=0.000, Fbeta=0.000
+education=Preschool | Precision=1.000, Recall=1.000, Fbeta=1.000
+education=Assoc-acdm | Precision=0.640, Recall=0.552, Fbeta=0.593
+education=7th-8th | Precision=1.000, Recall=0.000, Fbeta=0.000
+education=Masters | Precision=0.779, Recall=0.859, Fbeta=0.817
+education=Doctorate | Precision=0.862, Recall=0.877, Fbeta=0.870
+education=Prof-school | Precision=0.842, Recall=0.895, Fbeta=0.867
+education=1st-4th | Precision=1.000, Recall=0.000, Fbeta=0.000
+education=12th | Precision=1.000, Recall=0.125, Fbeta=0.222

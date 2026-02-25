@@ -2,36 +2,31 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 import pandas as pd
 import joblib
-
 from ml.data import process_data
 from ml.model import inference
-
+import os
 
 # -----------------------------
 # FastAPI App
 # -----------------------------
-app = FastAPI(
-    title="Census Income Prediction API"
-)
-
+app = FastAPI(title="Census Income Prediction API")
 
 # -----------------------------
 # Load Model Artifacts
 # -----------------------------
-MODEL_PATH = "models/model.pkl"
-ENCODER_PATH = "models/encoder.pkl"
-LB_PATH = "models/lb.pkl"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "models/model.pkl")
+ENCODER_PATH = os.path.join(BASE_DIR, "models/encoder.pkl")
+LB_PATH = os.path.join(BASE_DIR, "models/lb.pkl")
 
 model = joblib.load(MODEL_PATH)
 encoder = joblib.load(ENCODER_PATH)
 lb = joblib.load(LB_PATH)
 
-
 # -----------------------------
 # Pydantic Input Schema
 # -----------------------------
 class CensusData(BaseModel):
-
     age: int
     workclass: str
     education: str
@@ -45,7 +40,7 @@ class CensusData(BaseModel):
 
     class Config:
         populate_by_name = True
-        json_schema_extra = {   # ✅ Pydantic v2 fix
+        json_schema_extra = {
             "example": {
                 "age": 37,
                 "workclass": "Private",
@@ -60,7 +55,6 @@ class CensusData(BaseModel):
             }
         }
 
-
 # -----------------------------
 # GET Endpoint
 # -----------------------------
@@ -68,24 +62,15 @@ class CensusData(BaseModel):
 def welcome():
     return {"message": "Welcome to the Census Income Prediction API"}
 
-
 # -----------------------------
 # POST Endpoint
 # -----------------------------
 @app.post("/inference")
 def predict(data: CensusData):
-
     try:
-        # Convert input
         input_df = pd.DataFrame([data.model_dump(by_alias=True)])
 
-        # ---- ADD MISSING NUMERIC COLUMNS ----
-        input_df["fnlgt"] = 0
-        input_df["education-num"] = 0
-        input_df["capital-gain"] = 0
-        input_df["capital-loss"] = 0
-
-        # Dummy label for encoder consistency
+        # Dummy label for process_data consistency
         input_df["salary"] = "<=50K"
 
         categorical_features = [
@@ -109,9 +94,7 @@ def predict(data: CensusData):
         )
 
         preds = inference(model, X)
-
         prediction = lb.inverse_transform(preds)[0]
-
         return {"prediction": prediction}
 
     except Exception as e:
