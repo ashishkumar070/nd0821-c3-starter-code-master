@@ -1,5 +1,6 @@
 [flake8]
 max-line-length = 120
+
 extend-ignore =
     E501,
     W291,
@@ -12,3 +13,9 @@ extend-ignore =
     E203,
     E225,
     E128,
+    F401,
+    F811
+
+exclude =
+    venv,
+    __pycache__
