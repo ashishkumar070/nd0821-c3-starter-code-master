@@ -1,40 +1,41 @@
-from sklearn.metrics import fbeta_score, precision_score, recall_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import precision_score, recall_score, fbeta_score
+from ml.data import process_data
+
+
 
 def train_model(X_train, y_train):
     """
-    Trains a machine learning model and returns it.
+    Train a machine learning model.
 
-    Inputs
-    ------
+    Parameters
+    ----------
     X_train : np.ndarray
-        Training data.
+        Training data
     y_train : np.ndarray
-        Labels.
+        Labels
+
     Returns
     -------
-    model : RandomForestClassifier
-        Trained machine learning model.
+    model : LogisticRegression
+        Trained machine learning model
     """
     model = LogisticRegression(max_iter=1000)
     model.fit(X_train, y_train)
-
-    return model 
-    
- 
+    return model
 
 
 def compute_model_metrics(y, preds):
     """
-    Validates the trained machine learning model using precision, recall, and F1.
+    Compute precision, recall and fbeta score.
 
-    Inputs
-    ------
+    Parameters
+    ----------
     y : np.ndarray
-        Known labels, binarized.
+        True labels
     preds : np.ndarray
-        Predicted labels, binarized.
+        Predicted labels
+
     Returns
     -------
     precision : float
@@ -49,18 +50,83 @@ def compute_model_metrics(y, preds):
 
 
 def inference(model, X):
-    """ Run model inferences and return the predictions.
+    """
+    Run model inference.
 
-    Inputs
-    ------
-    model : RandomForestClassifier
-        Trained machine learning model.
+    Parameters
+    ----------
+    model : LogisticRegression
     X : np.ndarray
-        Data used for prediction.
+
     Returns
     -------
     preds : np.ndarray
-        Predictions from the model.
     """
     preds = model.predict(X)
     return preds
+
+
+# ======================================================
+# Slice Metrics (Udacity Requirement)
+# ======================================================
+
+def compute_slice_metrics(
+    model,
+    data,
+    categorical_feature,
+    encoder,
+    lb,
+):
+    """
+    Compute model performance on slices of a categorical feature.
+
+    Example:
+        education = Bachelors
+        education = HS-grad
+        education = Masters
+    """
+
+
+    categorical_features = [
+        "workclass",
+        "education",
+        "marital-status",
+        "occupation",
+        "relationship",
+        "race",
+        "sex",
+        "native-country",
+    ]
+
+    results = []
+
+    for category in data[categorical_feature].unique():
+
+        slice_df = data[data[categorical_feature] == category]
+
+        X, y, _, _ = process_data(
+            slice_df,
+            categorical_features=categorical_features,
+            label="salary",
+            training=False,
+            encoder=encoder,
+            lb=lb,
+        )
+
+        preds = inference(model, X)
+
+        precision, recall, fbeta = compute_model_metrics(
+            y,
+            preds,
+        )
+
+        results.append(
+            (
+                f"{categorical_feature}={category} | "
+                f"Precision={precision:.3f}, "
+                f"Recall={recall:.3f}, "
+                f"Fbeta={fbeta:.3f}"
+            )
+        )
+
+    return results
