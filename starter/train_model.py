@@ -5,7 +5,6 @@ import os
 import joblib
 
 from sklearn.model_selection import train_test_split
-
 from ml.data import process_data
 from ml.model import train_model, compute_model_metrics, inference
 
@@ -15,7 +14,9 @@ from ml.model import train_model, compute_model_metrics, inference
 # -----------------------------
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
 DATA_PATH = BASE_DIR / "data" / "census.csv"
 
 data = pd.read_csv(DATA_PATH, skipinitialspace=True)
@@ -89,10 +90,11 @@ print(f"Fbeta: {fbeta}")
 # -----------------------------
 # Save Model Artifacts
 # -----------------------------
-os.makedirs("../models", exist_ok=True)
+MODEL_DIR = BASE_DIR / "models"
+MODEL_DIR.mkdir(exist_ok=True)
 
-joblib.dump(model, "../models/model.pkl")
-joblib.dump(encoder, "../models/encoder.pkl")
-joblib.dump(lb, "../models/lb.pkl")
+joblib.dump(model, MODEL_DIR / "model.pkl")
+joblib.dump(encoder, MODEL_DIR / "encoder.pkl")
+joblib.dump(lb, MODEL_DIR / "lb.pkl")
 
 print("Model and encoder saved successfully")

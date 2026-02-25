@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 import pandas as pd
 import joblib
-import os
 
 from ml.data import process_data
 from ml.model import inference
+
 
 # -----------------------------
 # FastAPI App
@@ -13,6 +13,7 @@ from ml.model import inference
 app = FastAPI(
     title="Census Income Prediction API"
 )
+
 
 # -----------------------------
 # Load Model Artifacts
@@ -44,7 +45,7 @@ class CensusData(BaseModel):
 
     class Config:
         populate_by_name = True
-        schema_extra = {
+        json_schema_extra = {   # ✅ Pydantic v2 fix
             "example": {
                 "age": 37,
                 "workclass": "Private",
@@ -65,9 +66,6 @@ class CensusData(BaseModel):
 # -----------------------------
 @app.get("/")
 def welcome():
-    """
-    Root endpoint returning welcome message
-    """
     return {"message": "Welcome to the Census Income Prediction API"}
 
 
@@ -76,36 +74,45 @@ def welcome():
 # -----------------------------
 @app.post("/inference")
 def predict(data: CensusData):
-    """
-    Perform model inference
-    """
 
-    # Convert request to dataframe
-    input_df = pd.DataFrame([data.dict(by_alias=True)])
+    try:
+        # Convert input
+        input_df = pd.DataFrame([data.model_dump(by_alias=True)])
 
-    categorical_features = [
-        "workclass",
-        "education",
-        "marital-status",
-        "occupation",
-        "relationship",
-        "race",
-        "sex",
-        "native-country"
-    ]
+        # ---- ADD MISSING NUMERIC COLUMNS ----
+        input_df["fnlgt"] = 0
+        input_df["education-num"] = 0
+        input_df["capital-gain"] = 0
+        input_df["capital-loss"] = 0
 
-    # Process data (inference mode)
-    X, _, _, _ = process_data(
-        input_df,
-        categorical_features=categorical_features,
-        training=False,
-        encoder=encoder,
-        lb=lb
-    )
+        # Dummy label for encoder consistency
+        input_df["salary"] = "<=50K"
 
-    # Prediction
-    preds = inference(model, X)
+        categorical_features = [
+            "workclass",
+            "education",
+            "marital-status",
+            "occupation",
+            "relationship",
+            "race",
+            "sex",
+            "native-country",
+        ]
 
-    prediction = lb.inverse_transform(preds)[0]
+        X, _, _, _ = process_data(
+            input_df,
+            categorical_features=categorical_features,
+            label="salary",
+            training=False,
+            encoder=encoder,
+            lb=lb,
+        )
 
-    return {"prediction": prediction}
+        preds = inference(model, X)
+
+        prediction = lb.inverse_transform(preds)[0]
+
+        return {"prediction": prediction}
+
+    except Exception as e:
+        return {"error": str(e)}
